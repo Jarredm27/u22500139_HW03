@@ -1,0 +1,154 @@
+﻿@model HW03.Models.ChartData
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Type Chart</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <a class="navbar-brand" href="#">Reports</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Charts/Index">Books</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Charts/Gender">Student Gender</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Charts/Classes">Student Classes</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="col-md-9">
+                <h1>Book Type Chart</h1>
+                <canvas id="bookTypeChart"></canvas>
+
+                <!-- Buttons to switch between chart types with different colors and spacing -->
+                <div class="btn-group mt-3" role="group" aria-label="Chart Type">
+                    <button type="button" class="btn btn-primary mr-2" id="barChartButton" style="background-color: #007bff;">Bar Chart</button>
+                    <button type="button" class="btn btn-success" id="lineChartButton" style="background-color: #28a745;">Line Chart</button>
+                </div>
+
+                <button type="button" class="btn btn-secondary" id="exportChart">Export Chart</button>
+                <img id="exportedImage" style="display: none;">
+
+
+                <h3>Most Popular Books:</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Book Name</th>
+                            <th>Total Borrows</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var book in Model.MostPopularBooks)
+                        {
+                            <tr>
+                                <td>@book.BookName</td>
+                                <td>@book.TotalBorrows</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- Export button for PDF -->
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var chartData = @Html.Raw(Json.Encode(Model));
+        var ctx = document.getElementById('bookTypeChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.Labels,
+                datasets: [{
+                    label: 'Books',
+                    data: chartData.Values,
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Book Types'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Number of Books'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // JavaScript to handle switching between bar and line charts
+        document.getElementById('barChartButton').addEventListener('click', function() {
+            myChart.config.type = 'bar';
+            myChart.update();
+        });
+
+        document.getElementById('lineChartButton').addEventListener('click', function() {
+            myChart.config.type = 'line';
+            myChart.update();
+        });
+
+
+        // Function to export the chart as an image
+        function exportChart() {
+            var canvas = document.getElementById('bookTypeChart');
+            var img = document.getElementById('exportedImage');
+            img.src = canvas.toDataURL('image/png');
+            img.style.display = 'block';
+
+            // Optionally, you can provide a download link for the user
+            var downloadLink = document.createElement('a');
+            downloadLink.href = img.src;
+            downloadLink.download = 'chart.png';
+            downloadLink.click();
+        }
+
+        // Attach the exportChart function to the button click event
+        document.getElementById('exportChart').addEventListener('click', exportChart);
+
+
+    </script>
+</body>
+</html>

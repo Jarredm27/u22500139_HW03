@@ -1,0 +1,161 @@
+﻿@model HW03.Models.CombinedViewModel
+@{
+    ViewBag.Title = "Index";
+}
+
+@{
+    var nullBorrow = Model.Borrows?.Where(x => x.takenDate == null).Select(x => x.bookId).ToList();
+}
+
+<h2>Home</h2>
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+@using PagedList.Mvc;
+@using PagedList;
+
+@* Main content area *@
+<div class="row">
+    @* Students Section *@
+    <div class="col-md-12">
+        <div class="col">
+            <a href="@Url.Action("Create", "students")" class="btn btn-lg" style="border-radius: 20px; background-color:#27898b; color:white">Create</a>
+        </div>
+        <h3>Students</h3>
+
+        @* Anti-forgery token and students table *@
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            <table class="table" style="width:100%">
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.Students.FirstOrDefault().studentId)</th>
+                    <th>@Html.DisplayNameFor(model => model.Students.FirstOrDefault().name)</th>
+                    <th>@Html.DisplayNameFor(model => model.Students.FirstOrDefault().surname)</th>
+                    <th>@Html.DisplayNameFor(model => model.Students.FirstOrDefault().birthdate)</th>
+                    <th>@Html.DisplayNameFor(model => model.Students.FirstOrDefault().gender)</th>
+                    <th>@Html.DisplayNameFor(model => model.Students.FirstOrDefault().@class)</th>
+                    <th>@Html.DisplayNameFor(model => model.Students.FirstOrDefault().point)</th>
+                    <th></th>
+                </tr>
+                @foreach (var item in Model.Students)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.studentId)</td>
+                        <td>@Html.DisplayFor(modelItem => item.name)</td>
+                        <td>@Html.DisplayFor(modelItem => item.surname)</td>
+                        <td>@Html.DisplayFor(modelItem => item.birthdate)</td>
+                        <td>@Html.DisplayFor(modelItem => item.gender)</td>
+                        <td>@Html.DisplayFor(modelItem => item.@class)</td>
+                        <td>@Html.DisplayFor(modelItem => item.point)</td>
+                        <td class="text-end">
+                            <a href="#" class="edit-link" data-url="@Url.Action("Edit", "students", new { id = item.studentId })">Edit</a>
+                            <a href="#" class="details-link" data-url="@Url.Action("Details", "students", new { id = item.studentId })">Details</a>
+                            <a href="#" class="delete-link" data-url="@Url.Action("Delete", "students", new { id = item.studentId })">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </table>
+        }
+
+        @Html.PagedListPager(Model.Students, page => Url.Action("Index", new { page }))
+    </div>
+
+    @* Books Section *@
+    <div class="col-md-12">
+        <div class="col">
+            <a href="@Url.Action("Create", "books")" class="btn btn-lg" style="border-radius: 20px; background-color:#27898b; color:white">Create</a>
+        </div>
+        <h3>Books</h3>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            <table class="table" style="width:100%">
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.Books.FirstOrDefault().bookId)</th>
+                    <th>@Html.DisplayNameFor(model => model.Books.FirstOrDefault().name)</th>
+                    <th>@Html.DisplayNameFor(model => model.Books.FirstOrDefault().pagecount)</th>
+                    <th>@Html.DisplayNameFor(model => model.Books.FirstOrDefault().point)</th>
+                    <th>@Html.DisplayNameFor(model => model.Authors.FirstOrDefault().authorId)</th>
+                    <th>@Html.DisplayNameFor(model => model.Types.FirstOrDefault().typeId)</th>
+                    <th>Status</th>
+                </tr>
+                @foreach (var item in Model.Books)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.bookId)</td>
+                        <td>@Html.DisplayFor(modelItem => item.name)</td>
+                        <td>@Html.DisplayFor(modelItem => item.pagecount)</td>
+                        <td>@Html.DisplayFor(modelItem => item.point)</td>
+                        <td>@Html.DisplayFor(modelItem => item.author.authorId)</td>
+                        <td>@Html.DisplayFor(modelItem => item.type.name)</td>
+                        <td style="color: @(nullBorrow != null && nullBorrow.Contains(item.bookId) ? "red" : "green")">
+                            @(nullBorrow != null && nullBorrow.Contains(item.bookId) ? "Out" : "Available")
+                        </td>
+                        <td class="text-end">
+                            <a href="#" class="edit-link" data-url="@Url.Action("Edit", "books", new { id = item.bookId })">Edit</a>
+                            <a href="#" class="details-link" data-url="@Url.Action("Details", "books", new { id = item.bookId })">Details</a>
+                            <a href="#" class="delete-link" data-url="@Url.Action("Delete", "books", new { id = item.bookId })">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </table>
+        }
+
+        @Html.PagedListPager(Model.Books, page => Url.Action("Index", new { page }))
+    </div>
+</div>
+
+@* Modal Section *@
+<div id="myModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">My To Do List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-content"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(function () {
+        // Edit link handler
+        $(".edit-link, .edit-link-in-modal").click(function (e) {
+            e.preventDefault();
+            var url = $(this).data("url");
+
+            $.get(url, function (data) {
+                $("#modal-content").empty();
+                $("#modal-content").html(data);
+                $("#myModal").modal("show");
+            });
+        });
+
+        // Form submission within modal
+        $("#modal-content").on("submit", "form", function (e) {
+            e.preventDefault();
+            var form = $(this);
+            var url = form.attr("action");
+            var formData = form.serialize();
+
+            $.post(url, formData, function () {
+                $("#myModal").modal("hide");
+                location.reload();
+            });
+        });
+
+        // Other link handlers (details, delete, create)
+        $(".details-link, .delete-link, .create-link, .create-lookup-link").click(function (e) {
+            e.preventDefault();
+            var url = $(this).data("url");
+
+            $.get(url, function (data) {
+                $("#modal-content").empty();
+                $("#modal-content").html(data);
+                $("#myModal").modal("show");
+            });
+        });
+    });
+</script>

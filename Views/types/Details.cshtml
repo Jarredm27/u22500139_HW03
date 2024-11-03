@@ -1,0 +1,26 @@
+﻿@model HW03.Models.type
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>type</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.name)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    <a href="@Url.Action("Maintain", "Home")" class="btn btn-primary btn-sm">Back to List</a>
+
+</p>

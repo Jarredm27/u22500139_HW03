@@ -1,0 +1,80 @@
+﻿@model HW03.Models.ChartData
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gender Distribution Chart</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css"> <!-- Add a custom CSS file for styling -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Reports</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Charts/Index">Books</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Charts/Gender">Student Gender</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Charts/Classes">Student Classes</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <h1>Gender Distribution Chart</h1>
+        <canvas id="genderChart"></canvas>
+
+        <button type="button" class="btn btn-secondary" id="exportChart">Export Chart</button>
+        <img id="exportedImage" style="display: none;">
+    </div>
+
+    <script>
+        var genderChartData = @Html.Raw(Json.Encode(Model));
+        var genderCtx = document.getElementById('genderChart').getContext('2d');
+        var genderChart = new Chart(genderCtx, {
+            type: 'bar',
+            data: {
+                labels: genderChartData.Labels,
+                datasets: [{
+                    label: 'Gender Distribution',
+                    data: genderChartData.Values,
+                    backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6'],
+                    borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        function exportChart() {
+            var canvas = document.getElementById('genderChart');
+            var img = document.getElementById('exportedImage');
+            img.src = canvas.toDataURL('image/png');
+            img.style.display = 'block';
+
+            // Optionally, you can provide a download link for the user
+            var downloadLink = document.createElement('a');
+            downloadLink.href = img.src;
+            downloadLink.download = 'chart.png';
+            downloadLink.click();
+        }
+
+        // Attach the exportChart function to the button click event
+        document.getElementById('exportChart').addEventListener('click', exportChart);
+    </script>
+</body>
+</html>
+
